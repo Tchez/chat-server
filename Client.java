@@ -1,16 +1,59 @@
-/**
- * Estabelecer e gerenciar a conexão de um cliente com um servidor de chat. 
- * Ela permite ao usuário conectar-se a um servidor especificado, enviar e receber mensagens em tempo real.
- *
- * Funcionalidades:
- * - Conectar-se a um servidor de chat usando um hostname e porta especificados.
- * - Gerenciar threads separadas para leitura e escrita de mensagens, permitindo
- *   comunicação simultânea.
- * - Permitir ao usuário definir e obter seu nome de usuário, utilizado para identificação
- *   nas mensagens do chat.
- * - Informar o usuário sobre o status da conexão, incluindo sucesso, falhas ou erros
- *   de conexão.
- */
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.Scanner;
+
 public class Client {
-    
+
+    public static void main(String... args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Digite seu nome: ");
+        String user = scanner.nextLine();
+
+        if (user.isEmpty()) {
+            System.out.println("Nome de usuário inválido");
+            return;
+        }
+
+        System.out.println("Bem vindo " + user);
+        System.out.println("Inicializando conexão com o servidor...");
+
+        try {
+            String opcao;
+            String resposta;
+
+            Socket socket = new Socket("localhost", 3333);
+            PrintWriter writer = new PrintWriter(socket.getOutputStream());
+            Scanner entrada = new Scanner(System.in);
+            InputStreamReader reader = new InputStreamReader(socket.getInputStream());
+            BufferedReader bufferedReader = new BufferedReader(reader);
+
+            writer.println(user);
+            writer.flush();
+
+            do {
+                System.out.print("Selecione uma opção: ");
+                System.out.println("1 - Listar usuários");
+                System.out.println("2 - Enviar mensagem");
+                System.out.println("3 - Sair");
+                System.out.print("Opção: ");
+
+                opcao = entrada.nextLine();
+                writer.println(opcao);
+                writer.flush();
+                resposta = bufferedReader.readLine();
+                System.out.println(resposta);
+            } while (!opcao.equals("3"));
+
+            bufferedReader.close();
+            reader.close();
+            writer.close();
+            socket.close();
+        } catch (Exception e) {
+            System.out.println("Exceção..: " + e.getMessage());
+        }
+    }
 }
