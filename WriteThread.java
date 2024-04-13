@@ -2,6 +2,9 @@ import java.io.*;
 import java.net.*;
 import java.util.Scanner;
 
+/***
+ * Escreve as mensagens do cliente no servidor.
+ */
 public class WriteThread extends Thread {
     private PrintWriter writer;
     private Socket socket;
@@ -23,7 +26,7 @@ public class WriteThread extends Thread {
     public void run() {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.print("Enter your nickname: ");
+        System.out.print("Digite seu nickname: ");
         String userName = scanner.nextLine();
         client.setUserName(userName);
         writer.println(userName);
@@ -33,7 +36,6 @@ public class WriteThread extends Thread {
         do {
             text = scanner.nextLine();
             writer.println(text);
-
         } while (!text.equals("/quit"));
 
         try {

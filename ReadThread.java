@@ -1,6 +1,10 @@
 import java.io.*;
 import java.net.*;
 
+/***
+ * Lê as mensagens do servidor e imprime na tela do cliente passado como
+ * parâmetro no construtor.
+ */
 public class ReadThread extends Thread {
     private BufferedReader reader;
     private Socket socket;

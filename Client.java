@@ -2,6 +2,10 @@ import java.io.*;
 import java.net.*;
 import java.util.Scanner;
 
+/***
+ * Estabelece a conexão com o servidor e inicializa as threads de leitura e
+ * escrita.
+ */
 public class Client {
     private String hostname;
     private int port;
@@ -15,8 +19,7 @@ public class Client {
     public void execute() {
         try {
             Socket socket = new Socket(hostname, port);
-
-            System.out.println("Connected to the chat server");
+            System.out.println("Conectado ao servidor de chat");
 
             new ReadThread(socket, this).start();
             new WriteThread(socket, this).start();

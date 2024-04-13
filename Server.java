@@ -3,6 +3,11 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 
+/***
+ * Esta classe lida com cada cliente conectado ao servidor. Ela é usada pelo
+ * servidor para gerenciar conexões individuais de clientes em threads
+ * separadas.
+ */
 public class Server {
     private int port;
     private ArrayList<ClientThread> clients;
@@ -16,11 +21,11 @@ public class Server {
 
     public void execute() {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("Chat Server is listening on port " + port);
+            System.out.println("Servidor iniciado. Aguardando conexões na porta " + port);
 
             while (true) {
                 Socket socket = serverSocket.accept();
-                System.out.println("New user connected");
+                System.out.println("Novo usuário conectado");
 
                 ClientThread newUser = new ClientThread(socket, this);
                 clients.add(newUser);
@@ -42,6 +47,10 @@ public class Server {
 
     void sendToSpecificClient(String message, String nickname) {
         for (ClientThread aUser : clients) {
+            if (aUser.getNickname() == null) {
+                continue;
+            }
+
             if (aUser.getNickname().equals(nickname)) {
                 aUser.sendMessage(message);
                 break;
@@ -52,13 +61,13 @@ public class Server {
     void removeUser(ClientThread user, String userName) {
         boolean removed = clients.remove(user);
         if (removed) {
-            System.out.println("The user: " + userName + " disconnected and was removed from the list.");
+            System.out.println("O usuário " + userName + " desconectou e foi removido da lista.");
             broadcast(userName + " has left the chat.", null);
         }
     }
 
     String getConnectedClients() {
-        StringBuilder sb = new StringBuilder("Connected clients: ");
+        StringBuilder sb = new StringBuilder("Clientes conectados: ");
         for (ClientThread aUser : clients) {
             sb.append(aUser.getNickname()).append(", ");
         }
@@ -75,5 +84,18 @@ public class Server {
 
         Server server = new Server(port);
         server.execute();
+    }
+
+    public Boolean isNicknameTaken(String nickname) {
+        for (ClientThread aUser : clients) {
+            if (aUser.getNickname() == null) {
+                continue;
+            }
+
+            if (aUser.getNickname().equals(nickname)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
