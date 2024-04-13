@@ -40,6 +40,22 @@ Este projeto visa a implementação de um sistema de chat que permite a comunica
 ### Recepção de Mensagens
 - Implementar uma thread dedicada à escuta de mensagens do servidor e à apresentação dessas mensagens ao usuário.
 
-## Conclusão
+## Como Executar
 
-Este README descreve os passos necessários para a implementação de um sistema de chat básico, incluindo um servidor concorrente e um cliente com funcionalidades específicas. As implementações detalhadas, incluindo a escolha da linguagem de programação, o gerenciamento de threads e a gestão de redes, dependerão das preferências e requisitos específicos do projeto.
+### Compilar código
+
+```bash
+javac *.java
+```
+
+### Executar servidor
+
+```bash
+java Server <port>
+```
+
+### Executar cliente
+
+```bash
+java Client <server-ip> <server-port>
+```

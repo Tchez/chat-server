@@ -1,13 +1,39 @@
-/**
- * Ler continuamente as mensagens recebidas do servidor em uma aplicação de chat cliente-servidor. 
- * Thread, fluxo de execução separado, para que os clientes possam simultaneamente ouvir do servidor e enviar mensagens.
- *
- * Funcionalidades:
- * - Continuamente escutar mensagens do servidor enquanto a conexão estiver ativa.
- * - Exibir as mensagens recebidas do servidor na console do cliente.
- * - Exibir o nome de usuário do cliente antes da prompt de entrada, após a exibição de cada mensagem,
- *   facilitando a identificação de quando o usuário pode digitar sua próxima mensagem.
- */
+import java.io.*;
+import java.net.*;
+
 public class ReadThread extends Thread {
-    
+    private BufferedReader reader;
+    private Socket socket;
+    private Client client;
+
+    public ReadThread(Socket socket, Client client) {
+        this.socket = socket;
+        this.client = client;
+
+        try {
+            InputStream input = socket.getInputStream();
+            reader = new BufferedReader(new InputStreamReader(input));
+        } catch (IOException ex) {
+            System.out.println("Error getting input stream: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
+
+    public void run() {
+        while (true) {
+            try {
+                String response = reader.readLine();
+                System.out.println("\n" + response);
+
+                // prints the username after displaying the server's message
+                if (client.getUserName() != null) {
+                    System.out.print("[" + client.getUserName() + "]: ");
+                }
+            } catch (IOException ex) {
+                System.out.println("Error reading from server: " + ex.getMessage());
+                ex.printStackTrace();
+                break;
+            }
+        }
+    }
 }

@@ -1,15 +1,46 @@
-/**
- * Responsável por enviar mensagens de um cliente para o servidor no chat. 
- * Thread, fluxo de execução separado, sem bloquear a leitura de mensagens vindas do servidor.
- *
- * Funcionalidades:
- * - Capturar mensagens digitadas pelo usuário no console e enviá-las ao servidor.
- * - Permitir que o usuário defina um nickname ao se conectar ao chat, o qual é enviado ao
- *   servidor antes de qualquer outra mensagem.
- * - Continuar a enviar mensagens digitadas pelo usuário até que o comando "/quit" seja
- *   digitado, indicando o desejo de se desconectar.
- * - Fechar a conexão do socket quando o usuário decide sair do chat.
- */
+import java.io.*;
+import java.net.*;
+import java.util.Scanner;
+
 public class WriteThread extends Thread {
-    
+    private PrintWriter writer;
+    private Socket socket;
+    private Client client;
+
+    public WriteThread(Socket socket, Client client) {
+        this.socket = socket;
+        this.client = client;
+
+        try {
+            OutputStream output = socket.getOutputStream();
+            writer = new PrintWriter(output, true);
+        } catch (IOException ex) {
+            System.out.println("Error getting output stream: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
+
+    public void run() {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter your nickname: ");
+        String userName = scanner.nextLine();
+        client.setUserName(userName);
+        writer.println(userName);
+
+        String text;
+
+        do {
+            text = scanner.nextLine();
+            writer.println(text);
+
+        } while (!text.equals("/quit"));
+
+        try {
+            socket.close();
+        } catch (IOException ex) {
+
+            System.out.println("Error writing to server: " + ex.getMessage());
+        }
+    }
 }

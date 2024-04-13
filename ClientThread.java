@@ -1,15 +1,64 @@
-/**
- * Tarefa que gerencia a comunicação entre o servidor e um cliente específico no chat. 
- * Cada instância desta classe é responsável por lidar com as mensagens de entrada e saída de um único cliente.
- *
- * Funcionalidades:
- * - Receber mensagens de um cliente através do socket e processá-las de acordo com o
- *   comando especificado (por exemplo, envio de mensagem privada, listagem de usuários conectados).
- * - Enviar mensagens para o cliente associado a esta thread, seja uma mensagem de chat geral,
- *   uma mensagem privada, ou a lista de usuários conectados.
- * - Gerenciar a conexão do cliente, incluindo o registro do seu nickname e a remoção do
- *   cliente da lista de usuários conectados quando o comando "/quit" é recebido.
- */
+import java.io.*;
+import java.net.*;
+
 public class ClientThread implements Runnable {
-    
+    private Socket socket;
+    private Server server;
+    private PrintWriter writer;
+    private String nickname;
+
+    public ClientThread(Socket socket, Server server) {
+        this.socket = socket;
+        this.server = server;
+    }
+
+    public void run() {
+        try {
+            InputStream input = socket.getInputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+
+            OutputStream output = socket.getOutputStream();
+            writer = new PrintWriter(output, true);
+
+            // Primeira mensagem recebida deve ser o nick do usuário
+            String nickName = reader.readLine();
+            this.nickname = nickName;
+            server.broadcast(nickName + " has joined the chat", this);
+
+            String serverMessage;
+            String clientMessage;
+
+            do {
+                clientMessage = reader.readLine();
+                if (clientMessage.startsWith("/private")) {
+                    // Formato: /private <nick> <message>
+                    String[] parts = clientMessage.split(" ", 3);
+                    if (parts.length == 3) {
+                        server.sendToSpecificClient("[" + nickName + " -> you]: " + parts[2], parts[1]);
+                    }
+                } else if (clientMessage.equals("/list")) {
+                    sendMessage(server.getConnectedClients());
+                } else {
+                    serverMessage = "[" + nickName + "]: " + clientMessage;
+                    server.broadcast(serverMessage, this);
+                }
+
+            } while (!clientMessage.equals("/quit"));
+
+            server.removeUser(this, nickName);
+            socket.close();
+
+        } catch (IOException ex) {
+            System.out.println("Error in UserThread: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
+
+    void sendMessage(String message) {
+        writer.println(message);
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
 }
